@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.2
+// @version      2.3
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -1845,9 +1845,13 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
    * 14. Menüpunkt
    * ============================================================
    *
-   * Extended Admincall schreibt #navi beim Laden neu. Unser Link wird
-   * daher bei Bedarf neu eingefügt und ans Ende geschoben (hinter
-   * "Mentoring" o. Ä.). Begrenzt, falls ein anderes Skript dasselbe tut.
+   * Unser Link steht fest direkt hinter "Einstellungen" (Extended
+   * Admincall). Andere Skripte wie "Mentoring" hängen sich ans Ende an –
+   * dadurch gibt es keinen Wettlauf um die Reihenfolge.
+   *
+   * Extended Admincall schreibt #navi beim Laden neu. injectNaviLink läuft
+   * deshalb direkt im MutationObserver (ohne Verzögerung), sodass der Link
+   * vor dem nächsten Zeichnen wieder da ist – kein Flackern.
    */
 
 
@@ -1864,12 +1868,20 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     if (!navi) return;
 
     let wrap = document.getElementById("mh-navi");
-
     if (!wrap) {
       wrap = h("span", { id: "mh-navi" }, " | ", h("a", { href: SETTINGS_URL }, "Melde-Helfer"));
-      navi.appendChild(wrap);
-    } else if (navi.lastElementChild !== wrap && naviMoves < 5) {
-      naviMoves += 1;
+    }
+
+    // Ohne Extended Admincall gibt es keinen Einstellungen-Link → ans Ende
+    const anchor = navi.querySelector('a[href*="settings=1"]');
+
+    if (anchor) {
+      // Begrenzt, falls ein anderes Skript genau denselben Platz beansprucht
+      if (anchor.nextElementSibling !== wrap && naviMoves < 20) {
+        naviMoves += 1;
+        anchor.insertAdjacentElement("afterend", wrap);
+      }
+    } else if (!wrap.isConnected) {
       navi.appendChild(wrap);
     }
 
@@ -2896,7 +2908,11 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     initTimer = setTimeout(initAddon, 300);
   }
 
-  new MutationObserver(scheduleInit).observe(document.documentElement, {
+  new MutationObserver(() => {
+    // Menülink sofort (vor dem Zeichnen), alles andere entprellt
+    injectNaviLink();
+    scheduleInit();
+  }).observe(document.documentElement, {
     childList: true,
     subtree: true
   });
