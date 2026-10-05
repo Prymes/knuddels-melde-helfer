@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.3
+// @version      2.4
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -833,6 +833,26 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
       font-family: Verdana, sans-serif;
     }
     .mh-button { margin-bottom: 6px; }
+
+    /* Extended Admincall zwingt jedes div in #main auf "width: 1000px;
+       margin: auto" – dadurch ragten die Boxen über die Spalte hinaus und
+       verloren ihre Abstände. Für unsere Boxen hier wieder aufheben
+       (!important, weil die Ursprungsregel eine sehr hohe Spezifität hat). */
+    .mh-box, .mh-box div {
+      width: auto !important;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+    .mh-box { margin-top: 8px !important; margin-bottom: 8px !important; }
+    .mh-box .mh-title { margin-bottom: 6px !important; }
+    .mh-box .mh-row { margin-bottom: 10px !important; }
+    .mh-box .mh-row > div { margin-bottom: 0 !important; }
+    .mh-box .mh-list { margin-bottom: 6px !important; }
+    .mh-box .mh-cat { margin-bottom: 2px !important; }
+    .mh-box .mh-collapsible { margin-bottom: 4px !important; }
+    .mh-box .mh-warn { margin-bottom: 10px !important; }
 
     /* Extended Admincall invertiert Inputs im Darkmode per Inline-Filter –
        für unsere eigenen Felder wird das hier wieder aufgehoben. */
