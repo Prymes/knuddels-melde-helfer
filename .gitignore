@@ -1,0 +1,12 @@
+# Alte Browser-Erweiterung (abgelöst durch melde-helfer.user.js)
+MeldeHelfer.zip
+content.js
+manifest.json
+textbausteine.js
+
+# Editor / System
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
