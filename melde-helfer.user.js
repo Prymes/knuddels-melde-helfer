@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.4
+// @version      2.5
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -1163,7 +1163,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
 
 
   function getMeldenummer() {
-    const match = (document.body.innerText || "").match(/Meldung\s+(\*\d[\d.]*)/i);
+    const match = (document.body.innerText || "").match(/Meldung:?\s*(\*\d[\d.]*)/i);
     return match && match[1] ? match[1] : MANUELL.meldenummer;
   }
 
