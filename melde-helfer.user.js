@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.5
+// @version      2.6
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -115,7 +115,7 @@
     MELDETYP: "Meldetyp der Meldung",
     MASSNAHMEN: "Angehakte Maßnahmen im Formular",
     VERSTOESSE: "Im Helfer ausgewählte Verstöße",
-    X: "Anzahl AE-Verstöße (Auswahl im Helfer)",
+    X: "Anzahl Verstöße (Auswahl im Helfer)",
     EMS: "EMS-Kontrolle (Auswahl im Helfer, sonst automatisch)",
     FREITEXT: "Freitext „Verstoß dieser Meldung“ im Helfer",
     SANKTION: "Bei Bewertung: Maßnahmen – bei Weiterleitung: Sanktionsempfehlung",
@@ -278,7 +278,7 @@
   ];
 
   /**
-   * Anzahl AE-Verstöße (1 bis 20) – fest.
+   * Anzahl Verstöße (1 bis 20) – fest, für alle Meldetypen.
    */
   const AE_VERSTOSS_ZAHLEN = Array.from({ length: 20 }, (_, i) => String(i + 1));
 
@@ -358,7 +358,7 @@ _Sanktion:_
       key: "adminAllgemein",
       title: "Adminkommentar (andere Meldetypen)",
       hint: "Button „Adminkommentar kopieren“ bei allen anderen Meldetypen.",
-      placeholders: ["VERSTOESSE", "MELDENUMMER", "NICK"]
+      placeholders: ["X", "VERSTOESSE", "MELDENUMMER", "NICK"]
     },
     {
       key: "forwardEmpfehlung",
@@ -1557,19 +1557,26 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
       h("div", { class: "mh-title" }, isAEMeldung() ? "Melde-Helfer (AE)" : "Melde-Helfer")
     );
 
-    // Obere Zeile (nur bei AE): Anzahl + EMS
-    if (isAEMeldung()) {
-      const countSelect = createSelect(`ae-count-${helperMode}`, AE_VERSTOSS_ZAHLEN);
-      countSelect.value = "1";
-      countSelect.style.minWidth = "120px";
+    // Obere Zeile: Anzahl (immer) + EMS (nur bei AE)
+    const countSelect = createSelect(`ae-count-${helperMode}`, AE_VERSTOSS_ZAHLEN);
+    countSelect.value = "1";
+    countSelect.style.minWidth = "120px";
 
+    // Bewertungs-Kommentar mit {{X}} sofort an die neue Anzahl anpassen
+    if (helperMode === "bewerten") {
+      countSelect.addEventListener("change", () => generateComment(/\{\{X\}\}/));
+    }
+
+    const topRow = h("div", { class: "mh-row" },
+      labeled(isAEMeldung() ? "Anzahl AE-Verstöße (X):" : "Anzahl Verstöße (X):", countSelect)
+    );
+    box.appendChild(topRow);
+
+    if (isAEMeldung()) {
       const emsSelect = createSelect(`ae-ems-${helperMode}`, CONFIG.ems, "Bitte wählen");
       emsSelect.style.minWidth = "220px";
 
-      box.appendChild(h("div", { class: "mh-row" },
-        labeled("Anzahl AE-Verstöße (X):", countSelect),
-        labeled("EMS-Kontrolle:", emsSelect)
-      ));
+      topRow.appendChild(labeled("EMS-Kontrolle:", emsSelect));
 
       if (getEMSDefaultValue() === "DURCHFÜHREN") {
         box.appendChild(h("div", { class: "mh-warn" }, "DURCHFÜHREN"));
@@ -1689,12 +1696,27 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
   }
 
 
+  const isAdminOption = opt => !!opt && normalizeSpaces(opt.textContent || opt.value || "") === "Admin";
+
+
+  /**
+   * Teamliste beim Weiterleiten nur zeigen, wenn im Team-Dropdown
+   * NICHT "Admin" gewählt ist.
+   */
+  function updateForwardTeamBoxVisibility() {
+    const select = document.getElementById("forwardteams");
+    const box = document.getElementById("melde-forward-team-box");
+    if (!select || !box) return;
+
+    box.style.display = isAdminOption(select.options[select.selectedIndex]) ? "none" : "";
+  }
+
+
   function setForwardTeamToAdmin() {
     const select = document.getElementById("forwardteams");
     if (!select) return;
 
-    const adminOption = Array.from(select.options || [])
-      .find(opt => normalizeSpaces(opt.textContent || opt.value || "") === "Admin");
+    const adminOption = Array.from(select.options || []).find(isAdminOption);
     if (!adminOption) return;
 
     select.value = adminOption.value;
@@ -1778,10 +1800,10 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
 
 
   /**
-   * onlyIfUsesSanctions: Bei Änderungen an den Maßnahmen nur neu
-   * erzeugen, wenn die Vorlage die Maßnahmen überhaupt enthält.
+   * onlyIfUses: Bei Änderungen an Maßnahmen oder Anzahl nur neu
+   * erzeugen, wenn die Vorlage den passenden Platzhalter enthält.
    */
-  function generateComment(onlyIfUsesSanctions) {
+  function generateComment(onlyIfUses) {
     const textarea = getBewertenCommentField();
     if (!textarea) return;
 
@@ -1790,7 +1812,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     const tpl = findCommentTemplate();
     if (!tpl || tpl.auto === false) return;
 
-    if (onlyIfUsesSanctions === true && !/\{\{(MASSNAHMEN|SANKTION)\}\}/.test(tpl.text)) return;
+    if (onlyIfUses && !onlyIfUses.test(tpl.text)) return;
 
     setFieldValue(textarea, fillTemplate(tpl.text, getPlaceholderValues("bewerten")));
   }
@@ -1839,11 +1861,17 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
    * ============================================================
    */
   function attachListeners() {
+    const forwardTeams = document.getElementById("forwardteams");
+    if (forwardTeams && !forwardTeams.dataset.meldeListenerAttached) {
+      forwardTeams.addEventListener("change", updateForwardTeamBoxVisibility);
+      forwardTeams.dataset.meldeListenerAttached = "1";
+    }
+
     const bewertungSelect = getBewertungSelect();
     if (!bewertungSelect) return;
 
     if (!bewertungSelect.dataset.meldeListenerAttached) {
-      bewertungSelect.addEventListener("change", () => generateComment(false));
+      bewertungSelect.addEventListener("change", () => generateComment());
       bewertungSelect.dataset.meldeListenerAttached = "1";
     }
 
@@ -1851,7 +1879,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
       if (input.dataset.meldeActionListenerAttached) return;
 
       input.addEventListener("change", () => {
-        if (getBewertungKey() === "ber") generateComment(true);
+        if (getBewertungKey() === "ber") generateComment(/\{\{(MASSNAHMEN|SANKTION)\}\}/);
         updateActionButtonsVisibility();
       });
 
@@ -2913,6 +2941,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     injectTeamSelections();
     attachListeners();
     updateActionButtonsVisibility();
+    updateForwardTeamBoxVisibility();
   }
 
 
