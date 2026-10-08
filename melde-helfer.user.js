@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.6
+// @version      2.7
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -351,13 +351,13 @@ _Sanktion:_
     {
       key: "adminAE",
       title: "Adminkommentar (AE-Meldung)",
-      hint: "Button „Adminkommentar kopieren“ bei Extremistischen Aussagen.",
+      hint: "Button „Adminkommentar“ (und „/macro warn“) bei Extremistischen Aussagen.",
       placeholders: ["X", "VERSTOESSE", "MELDENUMMER", "NICK"]
     },
     {
       key: "adminAllgemein",
       title: "Adminkommentar (andere Meldetypen)",
-      hint: "Button „Adminkommentar kopieren“ bei allen anderen Meldetypen.",
+      hint: "Button „Adminkommentar“ (und „/macro warn“) bei allen anderen Meldetypen.",
       placeholders: ["X", "VERSTOESSE", "MELDENUMMER", "NICK"]
     },
     {
@@ -1616,17 +1616,18 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     // Kopierbuttons nur bei Bewertung
     if (helperMode === "bewerten") {
       const copyRow = h("div", { class: "mh-row" },
-        createButton("Verwarntext kopieren", copyVerwarntext),
-        createButton("Adminkommentar kopieren", () => {
+        createButton("Verwarntext", copyVerwarntext),
+        createButton("Adminkommentar", () => {
           copyToClipboard(buildAdminComment(), "Adminkommentar wurde in die Zwischenablage kopiert.");
-        })
+        }),
+        createButton("/macro warn", copyWarnMacro)
       );
 
       // Verwarnungen mit eigenem Button
       CONFIG.verwarnungen
         .filter(tpl => (tpl.buttonMeldetypen || []).length)
         .forEach(tpl => {
-          const btn = createButton(`Verwarnung „${tpl.title}“ kopieren`, () => {
+          const btn = createButton(`Verwarnung „${tpl.title}“`, () => {
             copyToClipboard(fillTemplate(tpl.text, getPlaceholderValues("bewerten")),
               "Verwarntext wurde in die Zwischenablage kopiert.");
           }, "mh-warn-button");
@@ -1852,6 +1853,34 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
   function buildAdminComment() {
     const text = isAEMeldung() ? CONFIG.festeTexte.adminAE : CONFIG.festeTexte.adminAllgemein;
     return fillTemplate(text, getPlaceholderValues("bewerten"));
+  }
+
+
+  /**
+   * Button "/macro warn": /macro warn:NICK|ADMINKOMMENTAR|VERWARNTEXT
+   *
+   * Die Chat-Eingabe ist einzeilig – Zeilenumbrüche werden deshalb zu
+   * Leerzeichen. Ein "|" in den Texten würde die Parameter verschieben
+   * und wird durch "/" ersetzt.
+   */
+  function copyWarnMacro() {
+    const tpl = findWarnTemplate(getAEHelperValues("bewerten").violationIds);
+
+    if (!tpl) {
+      showToast("Kein passender Verwarntext. Lege in den Melde-Helfer-Einstellungen einen Standardtext fest.");
+      return;
+    }
+
+    const part = text => normalizeSpaces(text).replace(/\|/g, "/");
+    const values = getPlaceholderValues("bewerten");
+
+    const macro = "/macro warn:" + [
+      values.NICK,
+      buildAdminComment(),
+      fillTemplate(tpl.text, values)
+    ].map(part).join("|");
+
+    copyToClipboard(macro, `/macro warn mit Verwarntext „${tpl.title}“ wurde in die Zwischenablage kopiert.`);
   }
 
 
@@ -2754,7 +2783,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     body.append(
       placeholderLegend(VERWARN_PLATZHALTER),
       h("div", { class: "mh-subtitle" }, "Verwarntexte"),
-      hint("„Verwarntext kopieren“ im Helfer nimmt die oberste Vorlage, die einen der angehakten Verstöße enthält "
+      hint("Die Buttons „Verwarntext“ und „/macro warn“ im Helfer nehmen die oberste Vorlage, die einen der angehakten Verstöße enthält "
         + "(Reihenfolge = Priorität). Passt keine, wird der Standardtext verwendet. Jeder Verstoß kann nur einer "
         + "Vorlage zugeordnet werden – vergebene sind ausgegraut. Optional bekommt eine Vorlage einen eigenen "
         + "Kopier-Button, der nur bei bestimmten Meldetypen erscheint.")

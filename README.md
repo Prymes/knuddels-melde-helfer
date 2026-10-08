@@ -6,6 +6,7 @@ Tampermonkey-Skript für das Knuddels-Meldesystem. Läuft zusätzlich zu
 - AE-Helfer mit Verstoßauswahl, EMS-Kontrolle und Kommentargenerierung
 - Kommentar-Vorlagen je Meldetyp und Bewertung
 - Verwarntexte je Verstoß (kopieren per Klick)
+- Button „/macro warn“: kopiert `/macro warn:Nick|Adminkommentar|Verwarntext`
 - Team-Auswahl für „Weiterleiten an Nicks“ / „Übergabe an Nicks“
 - Eigene Einstellungsseite im Menü unter **Melde-Helfer**
 
