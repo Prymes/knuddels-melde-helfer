@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.7
+// @version      2.8
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -1860,8 +1860,8 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
    * Button "/macro warn": /macro warn:NICK|ADMINKOMMENTAR|VERWARNTEXT
    *
    * Die Chat-Eingabe ist einzeilig – Zeilenumbrüche werden deshalb zu
-   * Leerzeichen. Ein "|" in den Texten würde die Parameter verschieben
-   * und wird durch "/" ersetzt.
+   * "#" (Zeilenumbruch im Knuddels-Chat, Leerzeile = "##"). Ein "|" in
+   * den Texten würde die Parameter verschieben und wird durch "/" ersetzt.
    */
   function copyWarnMacro() {
     const tpl = findWarnTemplate(getAEHelperValues("bewerten").violationIds);
@@ -1871,7 +1871,12 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
       return;
     }
 
-    const part = text => normalizeSpaces(text).replace(/\|/g, "/");
+    const part = text => (text || "")
+      .replace(/\|/g, "/")
+      .split(/\r?\n/)
+      .map(normalizeSpaces)
+      .join("#")
+      .replace(/^#+|#+$/g, "");
     const values = getPlaceholderValues("bewerten");
 
     const macro = "/macro warn:" + [
