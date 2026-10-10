@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Melde-Helfer (für Extended Admincall)
 // @namespace    http://ps.addins.net/
-// @version      2.8
+// @version      2.9
 // @description  AE-Helfer, Kommentargenerierung, Verwarntexte und Teamauswahl – läuft zusätzlich zu "Extended Admincall". Mit eigener Einstellungsseite.
 // @author       Prymes
 // @match        https://*.knuddels.de/ac/*
@@ -72,17 +72,18 @@
   /**
    * Meldetypen.
    * - label: Anzeige in den Einstellungen
+   * - short: Kurzform (Verstoß-Einstellungen)
    * - match: Erkennung im Meldetyp der Seite (Kleinschreibung)
    */
   const MELDETYPEN = [
-    { key: "sexbel", label: "Sexuelle Belästigung melden", match: /sexuell/ },
-    { key: "aussage", label: "Aussage melden", match: /aussage/ },
-    { key: "alter", label: "Alter / Geschlecht melden", match: /alter|geschlecht/ },
-    { key: "profil", label: "Profilinhalt melden", match: /profil/ },
-    { key: "extrem", label: "Extremistische Aussage melden", match: /extrem/ },
-    { key: "jugend", label: "Jugendgefährdende Aussage melden", match: /jugend/ },
-    { key: "suizid", label: "Suizid-/Amokankündigung melden", match: /suizid|amok/ },
-    { key: "spiel", label: "Spielverhalten melden", match: /spiel/ }
+    { key: "sexbel", label: "Sexuelle Belästigung melden", short: "Sex. Bel.", match: /sexuell/ },
+    { key: "aussage", label: "Aussage melden", short: "Aussage", match: /aussage/ },
+    { key: "alter", label: "Alter / Geschlecht melden", short: "Alter/Geschl.", match: /alter|geschlecht/ },
+    { key: "profil", label: "Profilinhalt melden", short: "Profil", match: /profil/ },
+    { key: "extrem", label: "Extremistische Aussage melden", short: "AE", match: /extrem/ },
+    { key: "jugend", label: "Jugendgefährdende Aussage melden", short: "Jugend", match: /jugend/ },
+    { key: "suizid", label: "Suizid-/Amokankündigung melden", short: "Suizid/Amok", match: /suizid|amok/ },
+    { key: "spiel", label: "Spielverhalten melden", short: "Spiel", match: /spiel/ }
   ];
 
   /**
@@ -261,10 +262,10 @@
   ];
 
   const DEFAULT_TEAMS = [
-    ["Admin", "Chris30014"],
     ["AET", "Heiki, Allrounder2006, 1 Chris"],
-    ["Bugs", "Frozen Hope"],
-    ["CLT", "Anni maliisch x, carla100099"],
+    ["Bugs", "Gladbeck boy, WiNo2k"],
+    ["CLT", "Anni maliisch x, hero with sword and shield"],
+    ["Community Events", "Jeanny, Anni maliisch x"],
     ["CT", "Dytto, Chris30014, LamiKa"],
     ["Ehrenkommission", "Jag"],
     ["Forum", "Jag"],
@@ -272,9 +273,7 @@
     ["MyChannel", "Herrscherin des Eises, DdvOiD"],
     ["Profil", "Dragan der Schwertkämpfer, cepo, Börchen"],
     ["Smileys", "mrs fabelhaft, Palma de Mallorca Boy"],
-    ["Spiele", "Candela"],
-    ["Veranstaltungen", "Candela, Without a word"],
-    ["VK", "Jeanny, Anni maliisch x"]
+    ["Vertrauensadmin", "Chris30014"],
   ];
 
   /**
@@ -396,7 +395,7 @@ du erhältst diese Verwarnung, da du mit {{VERSTOESSE}} aufgefallen bist. Der Ve
 
 Der Schutz von Kindern und Jugendlichen hat auf Knuddels höchste Priorität. Entsprechende Verstöße werden konsequent verfolgt und geahndet.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein sicheres Miteinander für alle Mitglieder gewährleistet ist.`
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein sicheres Miteinander für alle Mitglieder gewährleistet ist.`
     },
     {
       title: "(Be-)Drohung",
@@ -407,7 +406,7 @@ du erhältst diese Verwarnung, da du mit einer Bedrohung oder Drohung gegenüber
 
 Drohungen und Bedrohungen gegenüber anderen Mitgliedern werden auf Knuddels nicht toleriert. Jedes Mitglied hat das Recht, sich sicher zu fühlen und frei von Einschüchterung zu kommunizieren.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
     },
     {
       title: "Kriegsverherrlichung",
@@ -418,7 +417,7 @@ du erhältst diese Verwarnung, da du mit Kriegsverherrlichung oder -verharmlosun
 
 Kriegsverherrlichung und -verharmlosung umfasst jede Darstellung von Krieg oder kriegerischen Handlungen, die diese als positiv, glorreich oder harmlos erscheinen lässt und das damit verbundene menschliche Leid ausblendet.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
     },
     {
       title: "Gewaltverherrlichung",
@@ -429,7 +428,7 @@ du erhälst diese Verwarnung, da du mit Gewaltverherrlichungen aufgefallen bist.
 
 Gewaltverherrlichung bezeichnet die Darstellung von Gewalt in einer Weise, die sie schönfärbt, verharmlost oder glorifiziert.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
     },
     {
       title: "Verschwörungstheorie",
@@ -440,7 +439,7 @@ du erhälst diese Verwarnung, da du mit dem andeuten und/oder verbreiten einer V
 
 Als Verschwörungstheorie wird im weitesten Sinne der Versuch bezeichnet, einen Zustand, ein Ereignis oder eine Entwicklung durch eine Verschwörung zu erklären, also durch das zielgerichtete, konspirative Wirken einer meist kleinen Gruppe von Akteuren zu einem oftmals illegalen oder illegitimen Zweck.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
     },
     {
       title: "Drogen",
@@ -451,7 +450,7 @@ du erhältst diese Verwarnung, da du mit der Verherrlichung oder Verharmlosung v
 
 Drogenverherrlichung und -verharmlosung umfasst jede Darstellung von Drogenkonsum, die diesen als positiv, harmlos oder erstrebenswert darstellt.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht. Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
     },
     {
       title: "Spielverstoß",
@@ -471,7 +470,7 @@ Bitte halte dich in Zukunft an die Spielregeln sowie die AGB und Knigge, damit a
 
 du erhälst diese Verwarnung, da du mit {{VERSTOESSE}} aufgefallen bist. Der Verstoß wurde durch unser Meldesystem erfasst und dokumentiert.
 
-Dieses Verhalten spielt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht.
+Dieses Verhalten spiegelt nicht wieder, wofür Knuddels mit seiner Philosophie und Knigge steht.
 Wir heißen alle willkommen, unabhängig von Geschlecht, Persönlichkeit, Sexualität, Herkunft, Glauben oder Hintergrund. Knuddels ist offen für alle, die verstehen können, dass hinter jedem Nicknamen ein Mensch mit Gefühlen und einer eigenen Geschichte steht. Alle unsere Mitglieder verdienen einen respektvollen und wertschätzenden Umgang, ohne Vorurteile.
 
 Bitte halte dich in Zukunft an die AGB und Knigge, damit auch weiterhin ein freundliches Miteinander gewährleistet ist.`
@@ -501,7 +500,8 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
    *
    * Aufbau:
    * - verstoesse:   Baum aus { id, label } (Verstoß) und
-   *                 { id, label, children: [] } (Gruppe)
+   *                 { id, label, children: [] } (Gruppe),
+   *                 optional meldetypen: [keys] – gilt auch für alles darunter
    * - sanktionen:   ["Permanent", ...]
    * - ems:          ["keine angegeben", ...]
    * - teams:        [{ id, name, leads: "Nick1, Nick2" }]
@@ -551,6 +551,31 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
 
   function containsNode(node, id) {
     return isGroup(node) && node.children.some(child => child.id === id || containsNode(child, id));
+  }
+
+
+  /**
+   * Meldetypen eines Knotens inkl. der von übergeordneten Gruppen geerbten.
+   */
+  function nodeTypes(node, inherited) {
+    return [...new Set([...inherited, ...(node.meldetypen || [])])];
+  }
+
+
+  /**
+   * Ohne zugeordnete Meldetypen (oder bei unbekanntem Meldetyp)
+   * wird ein Verstoß immer angezeigt.
+   */
+  function shownForType(types, typKey) {
+    return !typKey || !types.length || types.includes(typKey);
+  }
+
+
+  function hasShownItem(nodes, typKey, inherited) {
+    return nodes.some(node => {
+      const types = nodeTypes(node, inherited);
+      return isGroup(node) ? hasShownItem(node.children, typKey, types) : shownForType(types, typKey);
+    });
   }
 
 
@@ -824,6 +849,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     .mh-group { padding: 3px 2px; color: #555; border-bottom: 1px dotted #ccc; }
     .mh-collapsible { display: none; padding-left: 10px; margin-bottom: 4px; }
     .mh-collapsible.open { display: block; }
+    .mh-list:not(.mh-show-all) .mh-off-type { display: none !important; }
     .mh-warn { color: red; font-weight: bold; margin-bottom: 10px; }
     .mh-box textarea {
       width: 100%;
@@ -975,6 +1001,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
     .mh-vtree .mh-vgroup { font-weight: bold; cursor: pointer; user-select: none; }
     .mh-inline-checks label { display: inline-block; margin-right: 14px; cursor: pointer; }
     .mh-disabled { opacity: 0.5; }
+    .mh-type-edit { padding-top: 2px; padding-bottom: 6px; font-size: 12px; }
 
     html.mh-dark .mh-settings input[type="text"],
     html.mh-dark .mh-settings textarea,
@@ -1511,15 +1538,21 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
   /**
    * Verstoßbaum für den Helfer (beliebig tief).
    */
-  function renderHelperTree(nodes, parent, helperMode, depth) {
+  function renderHelperTree(nodes, parent, helperMode, depth, typKey, inherited = []) {
     nodes.forEach(node => {
+      const types = nodeTypes(node, inherited);
+
       if (isGroup(node)) {
         const content = createCollapsible(parent, node.label, depth === 0 ? "mh-cat" : "mh-cat mh-group");
-        renderHelperTree(node.children, content, helperMode, depth + 1);
+        if (!hasShownItem(node.children, typKey, types)) {
+          content.classList.add("mh-off-type");
+          content.previousElementSibling.classList.add("mh-off-type");
+        }
+        renderHelperTree(node.children, content, helperMode, depth + 1, typKey, types);
         return;
       }
 
-      parent.appendChild(h("label", {},
+      parent.appendChild(h("label", { class: shownForType(types, typKey) ? "" : "mh-off-type" },
         h("input", {
           type: "checkbox",
           class: "ae-violation",
@@ -1583,12 +1616,21 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
       }
     }
 
-    // Verstoßauswahl
+    // Verstoßauswahl (nur die zum Meldetyp passenden, außer "Alle anzeigen")
     const listWrap = h("div", { class: "mh-list", style: { maxHeight: "320px" } });
-    renderHelperTree(CONFIG.verstoesse, listWrap, helperMode, 0);
+    renderHelperTree(CONFIG.verstoesse, listWrap, helperMode, 0, getMeldetypKey());
+
+    const showAll = h("label", {},
+      h("input", {
+        type: "checkbox",
+        onchange: e => listWrap.classList.toggle("mh-show-all", e.target.checked)
+      }),
+      "Alle Verstöße anzeigen"
+    );
 
     box.append(
       h("div", { class: "mh-title" }, "Verstöße auswählen:"),
+      showAll,
       listWrap,
       createButton("Alle abwählen", () => uncheckViolations(helperMode)),
       h("div", { class: "mh-title" }, "Verstoß dieser Meldung:"),
@@ -2348,6 +2390,7 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
 
 
   const editorExpanded = new Set();
+  const typeEditorOpen = new Set();
   let treeDragId = null;
 
 
@@ -2404,6 +2447,8 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
       hint("Verschieben per Ziehen (⠿) oder mit den Pfeilen. ← holt einen Eintrag aus seiner Gruppe heraus, "
         + "→ schiebt ihn in die Gruppe direkt darüber. Beim Ziehen auf eine Gruppe: oberer/unterer Rand = davor/danach, "
         + "Mitte = hinein."),
+      hint("🏷 legt fest, bei welchen Meldetypen ein Verstoß im Helfer angezeigt wird. Bei einer Gruppe gilt die Auswahl "
+        + "auch für alles darunter. Ohne Auswahl wird der Verstoß bei allen Meldetypen angezeigt."),
       h("div", { class: "mh-toolbar" },
         createButton("➕ Kategorie", () => {
           const node = newTreeNode(true);
@@ -2452,11 +2497,47 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
   }
 
 
-  function renderTreeRows(nodes, container, depth, parentNode, rerender) {
+  function typeShortLabels(keys) {
+    return MELDETYPEN.filter(typ => keys.includes(typ.key)).map(typ => typ.short).join(", ");
+  }
+
+
+  /**
+   * Meldetyp-Auswahl unter einer Baumzeile. Geerbte Typen sind
+   * angehakt, aber nur bei der Gruppe änderbar, von der sie kommen.
+   */
+  function treeTypeEditor(node, inherited, depth, rerender) {
+    node.meldetypen = node.meldetypen || [];
+
+    return h("div", { class: "mh-inline-checks mh-type-edit", style: { paddingLeft: (56 + depth * 26) + "px" } },
+      MELDETYPEN.map(typ => {
+        const geerbt = inherited.includes(typ.key);
+        return h("label", { class: geerbt ? "mh-disabled" : "", title: geerbt ? "Von übergeordneter Gruppe geerbt" : "" },
+          h("input", {
+            type: "checkbox",
+            checked: geerbt || node.meldetypen.includes(typ.key),
+            disabled: geerbt,
+            onchange: e => {
+              node.meldetypen = node.meldetypen.filter(k => k !== typ.key);
+              if (e.target.checked) node.meldetypen.push(typ.key);
+              persist();
+              rerender();
+            }
+          }),
+          " " + typ.label
+        );
+      })
+    );
+  }
+
+
+  function renderTreeRows(nodes, container, depth, parentNode, rerender, inherited = []) {
     nodes.forEach((node, index) => {
       const group = isGroup(node);
       const open = editorExpanded.has(node.id);
       const prev = nodes[index - 1];
+      const types = nodeTypes(node, inherited);
+      const typesOpen = typeEditorOpen.has(node.id);
 
       const row = h("div", {
         class: "mh-row-edit" + (group ? " mh-row-group" : ""),
@@ -2522,6 +2603,13 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
           oninput: e => { node.label = e.target.value; persistSoon(); }
         }),
         h("span", { class: "mh-badge" }, badgeText),
+        h("span", { class: "mh-badge", title: "Meldetypen, bei denen das im Helfer angezeigt wird" },
+          types.length ? typeShortLabels(types) : "alle Meldetypen"),
+        iconButton("🏷", typesOpen ? "Meldetypen zuklappen" : "Meldetypen festlegen", () => {
+          if (typesOpen) typeEditorOpen.delete(node.id);
+          else typeEditorOpen.add(node.id);
+          rerender();
+        }),
         iconButton("↑", "Nach oben", () => { moveInList(nodes, index, index - 1); persist(); rerender(); }, index === 0),
         iconButton("↓", "Nach unten", () => { moveInList(nodes, index, index + 1); persist(); rerender(); }, index === nodes.length - 1),
         iconButton("←", "Aus der Gruppe herausnehmen", () => {
@@ -2568,8 +2656,12 @@ Bitte verzichte künftig auf derartige Vergleiche und achte auf eine angemessene
 
       container.appendChild(row);
 
+      if (typesOpen) {
+        container.appendChild(treeTypeEditor(node, inherited, depth, rerender));
+      }
+
       if (group && open) {
-        renderTreeRows(node.children, container, depth + 1, node, rerender);
+        renderTreeRows(node.children, container, depth + 1, node, rerender, types);
       }
     });
   }
